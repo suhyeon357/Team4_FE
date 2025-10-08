@@ -38,7 +38,6 @@ const Title = styled.div`
 const CalendarGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: ${({ theme }) => theme.spacing[1]};
 `;
 
 const Cell = styled.div`
@@ -46,10 +45,6 @@ const Cell = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-`;
-
-const Emoji = styled.div`
-  font-size: ${({ theme }) => theme.spacing[5]};
 `;
 
 const DayNumber = styled.small`
@@ -65,6 +60,29 @@ const ToggleButton = styled.button`
   background: none;
   font-size: ${({ theme }) => theme.spacing[5]};
   cursor: pointer;
+`;
+
+const DayCircle = styled.div<{ hasEmotion?: boolean }>`
+  width: ${({ theme }) => theme.spacing[7]};
+  height: ${({ theme }) => theme.spacing[7]};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+  cursor: pointer;
+
+  /* 표정이 없는 경우 (빈 칸) */
+  background-color: ${({ hasEmotion, theme }) =>
+    hasEmotion ? 'transparent' : theme.colors.colorScale.brown200};
+
+  /* 표정이 있는 경우 */
+  ${({ hasEmotion, theme }) =>
+    hasEmotion &&
+    `
+      border: 2px solid ${theme.colors.colorScale.brown400};
+      background-color: ${theme.colors.colorScale.brown100};
+    `}
 `;
 
 function DiariesDetail() {
@@ -95,9 +113,11 @@ function DiariesDetail() {
         <CalendarGrid>
           {Array.from({ length: totalDays }, (_, i) => {
             const date = `2025-08-${String(i + 1).padStart(2, '0')}`;
+            const emotion = records[date];
+            const hasEmotion = !!emotion;
             return (
               <Cell key={date}>
-                <Emoji>{records[date] ?? '⬜'}</Emoji>
+                <DayCircle hasEmotion={hasEmotion}>{emotion ? emotion : ''}</DayCircle>
                 <DayNumber>{i + 1}</DayNumber>
               </Cell>
             );

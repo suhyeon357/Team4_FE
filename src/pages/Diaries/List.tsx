@@ -46,10 +46,6 @@ const Day = styled.div`
   gap: ${({ theme }) => theme.spacing[1]};
 `;
 
-const Emoji = styled.div`
-  font-size: ${({ theme }) => theme.spacing[6]};
-`;
-
 const ToggleButton = styled.button`
   margin-top: ${({ theme }) => theme.spacing[3]};
   width: 100%;
@@ -67,6 +63,29 @@ const FeedbackDate = styled.p`
 const Message = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.xs};
   background-color: ${({ theme }) => theme.colors.colorScale.brown400};
+`;
+
+const DayCircle = styled.div<{ hasEmotion?: boolean }>`
+  width: ${({ theme }) => theme.spacing[7]};
+  height: ${({ theme }) => theme.spacing[7]};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+  cursor: pointer;
+
+  /* 표정이 없는 경우 (빈 칸) */
+  background-color: ${({ hasEmotion, theme }) =>
+    hasEmotion ? 'transparent' : theme.colors.colorScale.brown200};
+
+  /* 표정이 있는 경우 */
+  ${({ hasEmotion, theme }) =>
+    hasEmotion &&
+    `
+      border: 2px solid ${theme.colors.colorScale.brown400};
+      background-color: ${theme.colors.colorScale.brown100};
+    `}
 `;
 
 function DiariesList() {
@@ -105,10 +124,13 @@ function DiariesList() {
         <WeekRow>
           {days.map((day, idx) => {
             const date = dates[idx];
+            const emotion = records[date];
+            const hasEmotion = !!emotion;
+
             return (
               <Day key={day}>
                 <div>{day}</div>
-                <Emoji>{records[date] ?? '⬜'}</Emoji>
+                <DayCircle hasEmotion={hasEmotion}>{emotion ? emotion : ''}</DayCircle>
                 <small>{date.slice(-2)}</small>
               </Day>
             );

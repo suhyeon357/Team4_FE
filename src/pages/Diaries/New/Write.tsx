@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useMemo, useState } from 'react';
 import formatKRDate from '../constants/formatKRDate';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   TiWeatherCloudy,
   TiWeatherShower,
@@ -10,6 +10,9 @@ import {
   TiWeatherSunny,
 } from 'react-icons/ti';
 import { Typography } from '@/components/common/Typography';
+import type { EmotionEnum } from '@/api/types';
+import { useMutation } from '@tanstack/react-query';
+import { DiariesAPI, type CreateDiaryRequest } from '@/api/diaries';
 
 const DateText = styled.p`
   text-align: center;
@@ -133,11 +136,41 @@ const WeatherSelect = styled.button`
 
 function DiariesNewWrite() {
   const todayKR = useMemo(() => formatKRDate(new Date()), []);
-  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { emotion?: EmotionEnum };
 
-  const gotoFeedback = () => {
-    navigate('/diaries/:id/feedback');
+  const [isOpen, setIsOpen] = useState(false);
+  const [content, setContent] = useState('');
+  const [emotion, setEmotion] = useState<EmotionEnum | null>(state?.emotion ?? null);
+
+  const createDiary = useMutation({
+    mutationFn: (data: CreateDiaryRequest) => DiariesAPI.createDiary(data),
+    onSuccess: (data) => {
+      alert('일기가 등록되었습니다!');
+      navigate(`/diaries/${data.id}/feedback`);
+    },
+    onError: (error) => {
+      console.error(error);
+      alert('일기 작성에 실패했습니다.');
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!content.trim()) {
+      alert('일기 내용을 입력해주세요!');
+      return;
+    }
+
+    if (!emotion) {
+      alert('감정을 선택해주세요!');
+      return;
+    }
+
+    createDiary.mutate({
+      content,
+      emotion,
+    });
   };
 
   return (
@@ -152,7 +185,11 @@ function DiariesNewWrite() {
       </HeaderContainer>
 
       <DiaryBox>
-        <DiaryText placeholder="오늘의 일기를 자유롭게 적어주세요" />
+        <DiaryText
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="오늘의 일기를 자유롭게 적어주세요"
+        />
         <MissionButton>
           <Typography variant="label2Regular" color="gray0">
             오늘 완료한 미션 가져오기
@@ -160,9 +197,9 @@ function DiariesNewWrite() {
         </MissionButton>
       </DiaryBox>
 
-      <NextButton onClick={gotoFeedback}>
+      <NextButton onClick={handleSubmit} disabled={createDiary.isPending}>
         <Typography variant="label2Regular" color="gray0">
-          다음
+          {createDiary.isPending ? '등록 중...' : '다음'}
         </Typography>
       </NextButton>
       {/* 바텀시트 */}
@@ -171,21 +208,23 @@ function DiariesNewWrite() {
           <BottomSheet onClick={(e) => e.stopPropagation()}>
             <Handle />
             <WeatherOptions>
-              <WeatherSelect>
-                <TiWeatherSunny />
-              </WeatherSelect>
-              <WeatherSelect>
-                <TiWeatherCloudy />
-              </WeatherSelect>
-              <WeatherSelect>
-                <TiWeatherShower />
-              </WeatherSelect>
-              <WeatherSelect>
-                <TiWeatherStormy />
-              </WeatherSelect>
-              <WeatherSelect>
-                <TiWeatherSnow />
-              </WeatherSelect>
+              {[
+                { icon: <TiWeatherSunny />, value: 'EXCELLENT' },
+                { icon: <TiWeatherCloudy />, value: 'GOOD' },
+                { icon: <TiWeatherShower />, value: 'SOSO' },
+                { icon: <TiWeatherStormy />, value: 'BAD' },
+                { icon: <TiWeatherSnow />, value: 'TERRIBLE' },
+              ].map((item) => (
+                <WeatherSelect
+                  key={item.value}
+                  onClick={() => {
+                    setEmotion(item.value as EmotionEnum);
+                    setIsOpen(false);
+                  }}
+                >
+                  {item.icon}
+                </WeatherSelect>
+              ))}
             </WeatherOptions>
           </BottomSheet>
         </BottomSheetOverlay>

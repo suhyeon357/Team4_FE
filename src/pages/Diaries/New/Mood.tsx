@@ -96,7 +96,10 @@ function Mood() {
   const goToWrite = () => {
     const safeMood: EmotionEnum = mood ?? 'NONE';
     alert(`선택한 기분: ${MOOD_LABEL[safeMood]}`);
-    navigate(`/diaries/${ROUTES.DIARIES_NEW}/${ROUTES.DIARIES_NEW_WRITE}`);
+    if (!mood) return;
+    navigate(`/diaries/${ROUTES.DIARIES_NEW}/${ROUTES.DIARIES_NEW_WRITE}`, {
+      state: { emotion: mood },
+    });
   };
 
   return (

@@ -85,9 +85,21 @@ const DayCircle = styled.div<{ hasEmotion?: boolean }>`
     `}
 `;
 
+const WeekHeader = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: ${({ theme }) => theme.spacing[2]};
+  color: ${({ theme }) => theme.colors.colorScale.gray1000};
+`;
+
 function DiariesDetail() {
   const navigate = useNavigate();
   const todayKR = useMemo(() => formatKRDate(new Date()), []);
+  const today = useMemo(() => new Date(), []);
+
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // 0부터 시작하므로 +1
 
   // 예시 데이터
   const [records] = useState<EmotionRecord>({
@@ -99,7 +111,10 @@ function DiariesDetail() {
     '2025-08-06': '😀',
   });
 
-  const totalDays = 31; // 8월 기준
+  const totalDays = useMemo(() => new Date(year, month, 0).getDate(), [year, month]);
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+
+  const firstDayOfMonth = useMemo(() => new Date(year, month - 1, 1).getDay(), [year, month]);
 
   const gotoWeekly = () => {
     navigate(ROUTES.DIARIES);
@@ -110,14 +125,22 @@ function DiariesDetail() {
       <DateText>{todayKR}</DateText>
       <Container>
         <Title>월간 표정</Title>
+        <WeekHeader>
+          {days.map((day) => (
+            <div key={day}>{day}</div>
+          ))}
+        </WeekHeader>
         <CalendarGrid>
+          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+            <Cell key={`empty-${i}`} />
+          ))}
           {Array.from({ length: totalDays }, (_, i) => {
-            const date = `2025-08-${String(i + 1).padStart(2, '0')}`;
-            const emotion = records[date];
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+            const emotion = records[dateStr];
             const hasEmotion = !!emotion;
             return (
-              <Cell key={date}>
-                <DayCircle hasEmotion={hasEmotion}>{emotion ? emotion : ''}</DayCircle>
+              <Cell key={dateStr}>
+                <DayCircle hasEmotion={hasEmotion}>{emotion || ''}</DayCircle>
                 <DayNumber>{i + 1}</DayNumber>
               </Cell>
             );

@@ -91,10 +91,32 @@ const DayCircle = styled.div<{ hasEmotion?: boolean }>`
 function DiariesList() {
   const navigate = useNavigate();
   const todayKR = useMemo(() => formatKRDate(new Date()), []);
+  const today = useMemo(() => new Date(), []);
+
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // 0부터 시작하므로 +1
+  const date = today.getDate();
 
   const gotoMonthly = () => {
     navigate(`/diaries/:id`);
   };
+
+  const weekDates = useMemo(() => {
+    const current = new Date(year, month - 1, date);
+    const dayOfWeek = current.getDay();
+    const sunday = new Date(current);
+    sunday.setDate(current.getDate() - dayOfWeek); // 주의 시작 (일요일)
+
+    // 일요일부터 토요일까지 배열 생성
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(sunday);
+      d.setDate(sunday.getDate() + i);
+      const y = d.getFullYear();
+      const m = `${d.getMonth() + 1}`.padStart(2, '0');
+      const day = `${d.getDate()}`.padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    });
+  }, [year, month, date]);
 
   // 예시 데이터
   const [records] = useState<EmotionRecord>({
@@ -106,15 +128,6 @@ function DiariesList() {
   });
 
   const days = ['일', '월', '화', '수', '목', '금', '토'];
-  const dates = [
-    '2025-08-03',
-    '2025-08-04',
-    '2025-08-05',
-    '2025-08-06',
-    '2025-08-07',
-    '2025-08-08',
-    '2025-08-09',
-  ];
 
   return (
     <>
@@ -123,7 +136,7 @@ function DiariesList() {
         <Title>주간 표정</Title>
         <WeekRow>
           {days.map((day, idx) => {
-            const date = dates[idx];
+            const dateStr = weekDates[idx];
             const emotion = records[date];
             const hasEmotion = !!emotion;
 
@@ -131,7 +144,7 @@ function DiariesList() {
               <Day key={day}>
                 <div>{day}</div>
                 <DayCircle hasEmotion={hasEmotion}>{emotion ? emotion : ''}</DayCircle>
-                <small>{date.slice(-2)}</small>
+                <small>{dateStr.slice(-2)}</small>
               </Day>
             );
           })}

@@ -13,7 +13,6 @@ import {
   Screen,
   Sheet,
   SheetTitle,
-  Title,
 } from './Missions.styles';
 import CTABar from './components/CTABar';
 import DailyPlanCard from './components/DailyPlanCard';
@@ -41,8 +40,6 @@ function Missions() {
   return (
     <>
       <Screen>
-        <Title>missions</Title>
-
         {/* 일일 계획 카드 */}
         <DailyPlanCard />
 

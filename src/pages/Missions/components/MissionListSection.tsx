@@ -1,4 +1,3 @@
-import type { Mission } from '@/api/types';
 import {
   AddPill,
   MissionItem,
@@ -7,13 +6,27 @@ import {
   SectionHeader,
   SectionTitle,
 } from '../Missions.styles';
+import { useQuery } from '@tanstack/react-query';
+import { getMissions } from '@/api/missions';
 
 type MissionListSectionProps = {
-  missions: Mission[];
   onClickAdd: () => void;
 };
 
-const MissionListSection = ({ missions, onClickAdd }: MissionListSectionProps) => {
+const MissionListSection = ({ onClickAdd }: MissionListSectionProps) => {
+  const {
+    data: missions = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['missions'],
+    queryFn: getMissions,
+  });
+
+  if (isLoading) return <Section>로딩중...</Section>;
+  if (isError) return <Section>에러: {(error as Error).message}</Section>;
+
   return (
     <Section>
       <SectionHeader>

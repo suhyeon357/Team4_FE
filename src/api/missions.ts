@@ -1,15 +1,12 @@
 import { http } from '@/lib/http';
 import type { Mission } from './types';
 
-export const MissionsAPI = {
-  listRecommended() {
-    return http.get<Mission>('/api/missions').then((r) => r.data);
-  },
+export const getMissions = async (): Promise<Mission[]> => {
+  const res = await http.get<{ content: Mission[] }>('/api/missions');
+  return res.data.content;
+};
 
-  createCustom(payload: { title: string; category: Mission['category'] }) {
-    return http.post<Mission>('/api/custom-missions', payload).then((r) => r.data);
-  },
-  updateCustom(id: string, payload: Partial<{ title: string; category: Mission['category'] }>) {
-    return http.patch<Mission>(`/api/custom-missions/${id}`, payload).then((r) => r.data);
-  },
+export const completeMission = async (missionId: number) => {
+  const res = await http.patch(`/api/missions/${missionId}/complete`);
+  return res.data;
 };

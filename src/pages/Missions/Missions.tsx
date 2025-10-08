@@ -1,7 +1,5 @@
-import type { Mission } from '@/api/types';
 import { Typography } from '@/components/common/Typography';
-import mocks from '@/mockSetup';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Chip,
   ChipRow,
@@ -18,24 +16,22 @@ import CTABar from './components/CTABar';
 import DailyPlanCard from './components/DailyPlanCard';
 import MissionListSection from './components/MissionListSection';
 import { MISSION_TAGS } from './constants/icon';
+import { useQuery } from '@tanstack/react-query';
+import { getMissions } from '@/api/missions';
 
 function Missions() {
   const [openSheet, setOpenSheet] = useState(false);
-  const [missions, setMissions] = useState<Mission[]>([]);
-
   const onAddMission = () => setOpenSheet(true);
   const onCloseSheet = () => setOpenSheet(false);
   const onNext = () => alert('다음');
 
-  useEffect(() => {
-    // 미션 리스트 조회, GET, /api/missions
-    const missionsMock = mocks.data.missionsMock;
-    if (missionsMock) {
-      setMissions([...missionsMock]);
-    } else {
-      setMissions([]);
-    }
-  }, []);
+  const { isLoading, isError, error } = useQuery({
+    queryKey: ['missions'],
+    queryFn: getMissions,
+  });
+
+  if (isLoading) return <div>로딩중...</div>;
+  if (isError) return <div>에러 발생: {(error as Error).message}</div>;
 
   return (
     <>
@@ -44,7 +40,7 @@ function Missions() {
         <DailyPlanCard />
 
         {/* 미션 리스트 */}
-        <MissionListSection missions={missions} onClickAdd={onAddMission} />
+        <MissionListSection onClickAdd={onAddMission} />
 
         {/* 하단 CTA */}
         <CTABar onNext={onNext} />

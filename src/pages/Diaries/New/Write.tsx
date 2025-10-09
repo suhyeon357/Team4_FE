@@ -10,9 +10,9 @@ import {
   TiWeatherSunny,
 } from 'react-icons/ti';
 import { Typography } from '@/components/common/Typography';
-import type { EmotionEnum } from '@/api/types';
+import type { CreateDiaryRequest, EmotionEnum } from '@/api/types';
 import { useMutation } from '@tanstack/react-query';
-import { DiariesAPI, type CreateDiaryRequest } from '@/api/diaries';
+import { DiariesAPI } from '@/api/diaries';
 
 const DateText = styled.p`
   text-align: center;

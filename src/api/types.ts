@@ -14,7 +14,15 @@ export type Plan = {
   category: CategoryEnum;
 };
 
-export type Diary = {
+// 요청 타입 (일기 생성 시 보낼 데이터)
+export type CreateDiaryRequest = {
+  emotion: EmotionEnum;
+  content: string;
+};
+
+// 응답 타입 (서버가 반환하는 데이터)
+export type DiaryResponse = {
+  id: number;
   emotion: EmotionEnum;
   content: string;
   feedback: string;

@@ -1,6 +1,7 @@
 import { Typography } from '@/components/common/Typography';
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDiaryDetail } from './hooks/useDiary';
 
 const BalloonWrap = styled.div`
   display: flex;
@@ -15,6 +16,19 @@ const Balloon = styled.div`
   border-radius: ${({ theme }) => theme.spacing[2]};
   font-size: 13px;
   position: relative;
+  max-height: 180px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: ${({ theme }) => theme.spacing[1]};
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: ${({ theme }) => theme.colors.colorScale.gray600};
+    border-radius: ${({ theme }) => theme.spacing[3]};
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `;
 
 const BalloonTail = styled.div`
@@ -55,13 +69,21 @@ function DiariesFeedback() {
     navigate('/diaries');
   };
 
+  const { id } = useParams();
+  const diaryId = Number(id);
+
+  const { data: diary, isLoading, isError } = useDiaryDetail(diaryId);
+
+  if (isLoading) return <div>로딩 중...</div>;
+  if (isError || !diary) return <div>피드백메시지를 불러올 수 없습니다.</div>;
+
   return (
     <>
       <BalloonWrap>
         <Balloon>
-          오늘 하루도 수고 많았다냥!
-          <br />
-          내일은 산책을 나가보자냥!
+          <Typography variant="label2Regular" style={{ fontSize: '1.2rem' }}>
+            {diary.feedback}
+          </Typography>
         </Balloon>
         <BalloonTail />
       </BalloonWrap>

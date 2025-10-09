@@ -1,7 +1,7 @@
 import { Typography } from '@/components/common/Typography';
 import styled from '@emotion/styled';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDiaryDetail } from './hooks/useDiary';
+import { useDiaryDetail } from './hooks/useDiaryDetail';
 
 const BalloonWrap = styled.div`
   display: flex;

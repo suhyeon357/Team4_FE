@@ -5,13 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { FiChevronDown } from 'react-icons/fi';
 import formatKRDate from './constants/formatKRDate';
 import theme from '@/styles/theme';
-
-const emotions = ['😀', '😐', '😡', '😢', '😊'] as const;
-type Emotion = (typeof emotions)[number] | null;
-
-type EmotionRecord = {
-  [date: string]: Emotion;
-};
+import { useDiaryEmotions } from './hooks/useDiaryEmotion';
+import { useDiariesList } from './hooks/useDiariesList';
 
 const DateText = styled.p`
   text-align: center;
@@ -65,7 +60,7 @@ const Message = styled.div`
   background-color: ${({ theme }) => theme.colors.colorScale.brown400};
 `;
 
-const DayCircle = styled.div<{ hasEmotion?: boolean }>`
+const DayCircle = styled.div<{ hasEmotion?: boolean; isSelected?: boolean }>`
   width: ${({ theme }) => theme.spacing[7]};
   height: ${({ theme }) => theme.spacing[7]};
   border-radius: 50%;
@@ -74,17 +69,19 @@ const DayCircle = styled.div<{ hasEmotion?: boolean }>`
   justify-content: center;
   margin: 4px;
   cursor: pointer;
-
-  /* 표정이 없는 경우 (빈 칸) */
   background-color: ${({ hasEmotion, theme }) =>
     hasEmotion ? 'transparent' : theme.colors.colorScale.brown200};
-
-  /* 표정이 있는 경우 */
   ${({ hasEmotion, theme }) =>
     hasEmotion &&
     `
       border: 2px solid ${theme.colors.colorScale.brown400};
       background-color: ${theme.colors.colorScale.brown100};
+    `}
+  ${({ isSelected, theme }) =>
+    isSelected &&
+    `
+      border: 3px solid ${theme.colors.colorScale.red400};
+      background-color: ${theme.colors.colorScale.brown300};
     `}
 `;
 
@@ -93,21 +90,21 @@ function DiariesList() {
   const todayKR = useMemo(() => formatKRDate(new Date()), []);
   const today = useMemo(() => new Date(), []);
 
+  const { data: diaries } = useDiariesList();
+  const { records, loading } = useDiaryEmotions();
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const selectedDiary = diaries?.find((d) => d.createdAt.split('T')[0] === selectedDate);
+
   const year = today.getFullYear();
   const month = today.getMonth() + 1; // 0부터 시작하므로 +1
   const date = today.getDate();
-
-  const gotoMonthly = () => {
-    navigate(`/diaries/:id`);
-  };
 
   const weekDates = useMemo(() => {
     const current = new Date(year, month - 1, date);
     const dayOfWeek = current.getDay();
     const sunday = new Date(current);
-    sunday.setDate(current.getDate() - dayOfWeek); // 주의 시작 (일요일)
-
-    // 일요일부터 토요일까지 배열 생성
+    sunday.setDate(current.getDate() - dayOfWeek);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(sunday);
       d.setDate(sunday.getDate() + i);
@@ -118,16 +115,17 @@ function DiariesList() {
     });
   }, [year, month, date]);
 
-  // 예시 데이터
-  const [records] = useState<EmotionRecord>({
-    '2025-08-03': '😊',
-    '2025-08-04': '😀',
-    '2025-08-05': '😡',
-    '2025-08-06': '😢',
-    '2025-08-07': '😀',
-  });
-
   const days = ['일', '월', '화', '수', '목', '금', '토'];
+
+  const handleSelectDate = (date: string) => {
+    setSelectedDate(date);
+  };
+
+  const gotoMonthly = () => {
+    navigate(`/diaries/:id`);
+  };
+
+  if (loading) return <p>로딩 중...</p>;
 
   return (
     <>
@@ -137,13 +135,20 @@ function DiariesList() {
         <WeekRow>
           {days.map((day, idx) => {
             const dateStr = weekDates[idx];
-            const emotion = records[date];
+            const emotion = records[dateStr];
             const hasEmotion = !!emotion;
+            const isSelected = selectedDate === dateStr;
 
             return (
               <Day key={day}>
                 <div>{day}</div>
-                <DayCircle hasEmotion={hasEmotion}>{emotion ? emotion : ''}</DayCircle>
+                <DayCircle
+                  hasEmotion={hasEmotion}
+                  isSelected={isSelected}
+                  onClick={() => handleSelectDate(dateStr)}
+                >
+                  {emotion ? emotion : ''}
+                </DayCircle>
                 <small>{dateStr.slice(-2)}</small>
               </Day>
             );
@@ -154,10 +159,15 @@ function DiariesList() {
         </ToggleButton>
       </Container>
       <br />
-      <Container>
-        <FeedbackDate>{todayKR}</FeedbackDate>
-        <Message>오늘의 피드백 메시지</Message>
-      </Container>
+      {/* 피드백 메시지 */}
+      {selectedDiary ? (
+        <Container>
+          <FeedbackDate>{formatKRDate(new Date(selectedDiary.createdAt))}</FeedbackDate>
+          <Message>{selectedDiary.feedback || '피드백이 없습니다.'}</Message>
+        </Container>
+      ) : (
+        selectedDate && <p style={{ textAlign: 'center' }}>이 날의 일기가 없습니다.</p>
+      )}
     </>
   );
 }

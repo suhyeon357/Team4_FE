@@ -2,6 +2,7 @@ import { Typography } from '@/components/common/Typography';
 import styled from '@emotion/styled';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDiaryDetail } from './hooks/useDiaryDetail';
+import { ROUTES } from '@/constants/routes';
 
 const BalloonWrap = styled.div`
   display: flex;
@@ -64,15 +65,15 @@ const NextButton = styled.button`
 `;
 
 function DiariesFeedback() {
-  const navigate = useNavigate();
-  const gotoList = () => {
-    navigate('/diaries');
-  };
-
   const { id } = useParams();
   const diaryId = Number(id);
 
   const { data: diary, isLoading, isError } = useDiaryDetail(diaryId);
+
+  const navigate = useNavigate();
+  const gotoList = () => {
+    navigate(`/${ROUTES.DIARIES}/${diaryId}`);
+  };
 
   if (isLoading) return <div>로딩 중...</div>;
   if (isError || !diary) return <div>피드백메시지를 불러올 수 없습니다.</div>;

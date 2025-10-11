@@ -11,4 +11,9 @@ export const DiariesAPI = {
     const res = await http.get(`/api/diaries/${id}`);
     return res.data;
   },
+
+  getAllDiaries: async (): Promise<DiaryResponse[]> => {
+    const res = await http.get('/api/diaries');
+    return res.data;
+  },
 };

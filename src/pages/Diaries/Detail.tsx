@@ -1,18 +1,12 @@
 // 월간표정
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import styled from '@emotion/styled';
 import { FiChevronUp } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import formatKRDate from './constants/formatKRDate';
 import { ROUTES } from '@/constants/routes';
 import theme from '@/styles/theme';
-
-const emotions = ['😀', '😐', '😡', '😢', '😊'] as const;
-type Emotion = (typeof emotions)[number] | null;
-
-type EmotionRecord = {
-  [date: string]: Emotion;
-};
+import { useDiaryDetail } from './hooks/useDiaryDetail';
 
 const DateText = styled.p`
   text-align: center;
@@ -101,15 +95,13 @@ function DiariesDetail() {
   const year = today.getFullYear();
   const month = today.getMonth() + 1; // 0부터 시작하므로 +1
 
-  // 예시 데이터
-  const [records] = useState<EmotionRecord>({
-    '2025-08-01': '😊',
-    '2025-08-02': '😀',
-    '2025-08-03': '😐',
-    '2025-08-04': '😡',
-    '2025-08-05': '😢',
-    '2025-08-06': '😀',
-  });
+  const { id } = useParams();
+  const diaryId = Number(id);
+
+  const { data: diary, isLoading, isError } = useDiaryDetail(diaryId);
+
+  if (isLoading) return <div>로딩 중...</div>;
+  if (isError || !diary) return <div>피드백메시지를 불러올 수 없습니다.</div>;
 
   const totalDays = useMemo(() => new Date(year, month, 0).getDate(), [year, month]);
   const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -117,7 +109,7 @@ function DiariesDetail() {
   const firstDayOfMonth = useMemo(() => new Date(year, month - 1, 1).getDay(), [year, month]);
 
   const gotoWeekly = () => {
-    navigate(ROUTES.DIARIES);
+    navigate(`/${ROUTES.DIARIES}/${diaryId}`);
   };
 
   return (
@@ -136,11 +128,10 @@ function DiariesDetail() {
           ))}
           {Array.from({ length: totalDays }, (_, i) => {
             const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
-            const emotion = records[dateStr];
-            const hasEmotion = !!emotion;
+            const hasEmotion = !!diary.emotion;
             return (
               <Cell key={dateStr}>
-                <DayCircle hasEmotion={hasEmotion}>{emotion || ''}</DayCircle>
+                <DayCircle hasEmotion={hasEmotion}>{diary.emotion || ''}</DayCircle>
                 <DayNumber>{i + 1}</DayNumber>
               </Cell>
             );

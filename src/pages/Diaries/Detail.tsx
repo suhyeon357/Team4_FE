@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import styled from '@emotion/styled';
 import { FiChevronUp } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
-import formatKRDate from './constants/formatKRDate';
+import formatKRDate from '../../utils/formatKRDate';
 import { ROUTES } from '@/constants/routes';
 import theme from '@/styles/theme';
 import { useDiaryDetail } from './hooks/useDiaryDetail';
@@ -86,6 +86,7 @@ const WeekHeader = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[2]};
   color: ${({ theme }) => theme.colors.colorScale.gray1000};
 `;
+const totalDays = 31; // 8월 기준
 
 function DiariesDetail() {
   const navigate = useNavigate();

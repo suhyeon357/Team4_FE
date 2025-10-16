@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { useMemo, useState } from 'react';
-import formatKRDate from '../constants/formatKRDate';
+import formatKRDate from '../../../utils/formatKRDate';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   TiWeatherCloudy,
@@ -13,6 +13,7 @@ import { Typography } from '@/components/common/Typography';
 import type { CreateDiaryRequest, EmotionEnum } from '@/api/types';
 import { useMutation } from '@tanstack/react-query';
 import { DiariesAPI } from '@/api/diaries';
+import { ROUTES } from '@/constants/routes';
 
 const DateText = styled.p`
   text-align: center;
@@ -171,66 +172,69 @@ function DiariesNewWrite() {
       content,
       emotion,
     });
-  };
+    const gotoFeedback = () => {
+      navigate(`/${ROUTES.DIARIES}/${ROUTES.DIARIES_FEEDBACK}`);
+    };
 
-  return (
-    <>
-      <HeaderContainer>
-        <DateText>{todayKR}</DateText>
-        <WeatherButton onClick={() => setIsOpen(true)}>
-          <Typography variant="label2Regular" style={{ fontSize: '1.2rem' }}>
-            +날씨
-          </Typography>
-        </WeatherButton>
-      </HeaderContainer>
+    return (
+      <>
+        <HeaderContainer>
+          <DateText>{todayKR}</DateText>
+          <WeatherButton onClick={() => setIsOpen(true)}>
+            <Typography variant="label2Regular" style={{ fontSize: '1.2rem' }}>
+              +날씨
+            </Typography>
+          </WeatherButton>
+        </HeaderContainer>
 
-      <DiaryBox>
-        <DiaryText
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="오늘의 일기를 자유롭게 적어주세요"
-        />
-        <MissionButton>
+        <DiaryBox>
+          <DiaryText
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="오늘의 일기를 자유롭게 적어주세요"
+          />
+          <MissionButton>
+            <Typography variant="label2Regular" color="gray0">
+              오늘 완료한 미션 가져오기
+            </Typography>
+          </MissionButton>
+        </DiaryBox>
+
+        <NextButton onClick={handleSubmit} disabled={createDiary.isPending}>
           <Typography variant="label2Regular" color="gray0">
-            오늘 완료한 미션 가져오기
+            {createDiary.isPending ? '등록 중...' : '다음'}
           </Typography>
-        </MissionButton>
-      </DiaryBox>
-
-      <NextButton onClick={handleSubmit} disabled={createDiary.isPending}>
-        <Typography variant="label2Regular" color="gray0">
-          {createDiary.isPending ? '등록 중...' : '다음'}
-        </Typography>
-      </NextButton>
-      {/* 바텀시트 */}
-      {isOpen && (
-        <BottomSheetOverlay onClick={() => setIsOpen(false)}>
-          <BottomSheet onClick={(e) => e.stopPropagation()}>
-            <Handle />
-            <WeatherOptions>
-              {[
-                { icon: <TiWeatherSunny />, value: 'EXCELLENT' },
-                { icon: <TiWeatherCloudy />, value: 'GOOD' },
-                { icon: <TiWeatherShower />, value: 'SOSO' },
-                { icon: <TiWeatherStormy />, value: 'BAD' },
-                { icon: <TiWeatherSnow />, value: 'TERRIBLE' },
-              ].map((item) => (
-                <WeatherSelect
-                  key={item.value}
-                  onClick={() => {
-                    setEmotion(item.value as EmotionEnum);
-                    setIsOpen(false);
-                  }}
-                >
-                  {item.icon}
-                </WeatherSelect>
-              ))}
-            </WeatherOptions>
-          </BottomSheet>
-        </BottomSheetOverlay>
-      )}
-    </>
-  );
+        </NextButton>
+        {/* 바텀시트 */}
+        {isOpen && (
+          <BottomSheetOverlay onClick={() => setIsOpen(false)}>
+            <BottomSheet onClick={(e) => e.stopPropagation()}>
+              <Handle />
+              <WeatherOptions>
+                {[
+                  { icon: <TiWeatherSunny />, value: 'EXCELLENT' },
+                  { icon: <TiWeatherCloudy />, value: 'GOOD' },
+                  { icon: <TiWeatherShower />, value: 'SOSO' },
+                  { icon: <TiWeatherStormy />, value: 'BAD' },
+                  { icon: <TiWeatherSnow />, value: 'TERRIBLE' },
+                ].map((item) => (
+                  <WeatherSelect
+                    key={item.value}
+                    onClick={() => {
+                      setEmotion(item.value as EmotionEnum);
+                      setIsOpen(false);
+                    }}
+                  >
+                    {item.icon}
+                  </WeatherSelect>
+                ))}
+              </WeatherOptions>
+            </BottomSheet>
+          </BottomSheetOverlay>
+        )}
+      </>
+    );
+  };
 }
 
 export default DiariesNewWrite;

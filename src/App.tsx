@@ -1,6 +1,8 @@
 import GlobalStyle from '@/styles/GlobalStyle';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { ROUTES } from './constants/routes';
 
 // pages
@@ -16,7 +18,7 @@ import DiariesNewLayout from '@/pages/Diaries/New/Layout';
 import DiariesNewMood from '@/pages/Diaries/New/Mood';
 import DiariesNewWrite from '@/pages/Diaries/New/Write';
 import Errors from '@/pages/Errors';
-import Home from '@/pages/Home';
+import Home from '@/pages/Home/Home';
 import Login from '@/pages/Login/Login';
 import OauthRedirect from '@/pages/Login/OauthRedirect';
 import Missions from '@/pages/Missions/Missions';
@@ -63,6 +65,17 @@ function App() {
             <Route path={ROUTES.NOT_FOUND} element={<Errors />} />
           </Route>
         </Routes>
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={true}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </BrowserRouter>
     </QueryClientProvider>
   );
